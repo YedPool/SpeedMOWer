@@ -401,4 +401,4 @@
         // Start the application
         getAndDisplaySubmissions();
     };
-}(window);
+
