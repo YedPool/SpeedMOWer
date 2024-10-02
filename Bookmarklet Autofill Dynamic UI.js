@@ -1,9 +1,16 @@
-(function(window) {
-    window.initJotFormAutofill = function(JOTFORM_API_KEY, GOOGLE_SHEETS_API_KEY) {
-        const FORM_ID = '241013857416150';
-        const JOTFORM_BASE_URL = 'https://hipaa-api.jotform.com/v1';
-        const GOOGLE_SHEETS_BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
+window.initJotFormAutofill = function() {
+    const JOTFORM_API_KEY = window.JOTFORM_API_KEY;
+    const GOOGLE_SHEETS_API_KEY = window.GOOGLE_SHEETS_API_KEY;
+    
+    if (!JOTFORM_API_KEY || !GOOGLE_SHEETS_API_KEY) {
+        console.error("API keys not found. Make sure to set them in the bookmarklet.");
+        return;
+    }
 
+    const FORM_ID = '241013857416150';
+    const JOTFORM_BASE_URL = 'https://hipaa-api.jotform.com/v1';
+    const GOOGLE_SHEETS_BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
+        
         // Function to fetch data from Google Sheets
         async function fetchFromGoogleSheets(spreadsheetId, range) {
             const url = `${GOOGLE_SHEETS_BASE_URL}/${spreadsheetId}/values/${range}?key=${GOOGLE_SHEETS_API_KEY}`;
