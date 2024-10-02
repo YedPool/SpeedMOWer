@@ -1,4 +1,4 @@
-window.initJotFormAutofill = function() {
+function initJotFormAutofill() {
     const JOTFORM_API_KEY = window.JOTFORM_API_KEY;
     const GOOGLE_SHEETS_API_KEY = window.GOOGLE_SHEETS_API_KEY;
     
@@ -10,8 +10,8 @@ window.initJotFormAutofill = function() {
     const FORM_ID = '241013857416150';
     const JOTFORM_BASE_URL = 'https://hipaa-api.jotform.com/v1';
     const GOOGLE_SHEETS_BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
-        
-        // Function to fetch data from Google Sheets
+
+    // Function to fetch data from Google Sheets
         async function fetchFromGoogleSheets(spreadsheetId, range) {
             const url = `${GOOGLE_SHEETS_BASE_URL}/${spreadsheetId}/values/${range}?key=${GOOGLE_SHEETS_API_KEY}`;
             const response = await fetch(url);
