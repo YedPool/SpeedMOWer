@@ -430,8 +430,7 @@ function initJotFormAutofill() {
                 console.warn(`Date input field with id ${id} not found`);
             }
         }
-// Call the function to initialize
-initJotFormAutofill();
+
         // Start the application
         getAndDisplaySubmissions();
     };
