@@ -81,20 +81,23 @@ function initJotFormAutofill() {
         return { filterInput, submissionsList, statusMessage, container };
     }
 
-        // Fetch and display submissions
-        async function getAndDisplaySubmissions() {
-            const { filterInput, submissionsList } = createUI();
-            try {
-                const submissions = await getSubmissions();
-                displaySubmissions(submissions, submissionsList);
-                filterInput.addEventListener('input', () => {
-                    const filteredSubmissions = filterSubmissions(submissions, filterInput.value);
-                    displaySubmissions(filteredSubmissions, submissionsList);
-                });
-            } catch (error) {
-                console.error('Error:', error);
+        // Modify the getAndDisplaySubmissions function
+    async function getAndDisplaySubmissions() {
+        const { filterInput, submissionsList, statusMessage, container } = createUI();
+        try {
+            const submissions = await getSubmissions();
+            displaySubmissions(submissions, submissionsList, statusMessage, container);
+            filterInput.addEventListener('input', () => {
+                const filteredSubmissions = filterSubmissions(submissions, filterInput.value);
+                displaySubmissions(filteredSubmissions, submissionsList, statusMessage, container);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            if (statusMessage) {
+                statusMessage.textContent = 'Error: Could not fetch submissions.';
             }
         }
+    }
 
         
     // Modify the displaySubmissions function
@@ -110,17 +113,22 @@ function initJotFormAutofill() {
             li.addEventListener('mouseover', () => { li.style.backgroundColor = '#f0f0f0'; });
             li.addEventListener('mouseout', () => { li.style.backgroundColor = 'transparent'; });
             li.addEventListener('click', async () => {
-                statusMessage.textContent = 'Autofill Initiated. Please wait a moment.';
+                if (statusMessage) {
+                    statusMessage.textContent = 'Autofill Initiated. Please wait a moment.';
+                }
                 await autofillForm(submission);
-                statusMessage.textContent = 'Autofill Complete.';
+                if (statusMessage) {
+                    statusMessage.textContent = 'Autofill Complete.';
+                }
                 setTimeout(() => {
-                    container.remove();
+                    if (container && container.parentNode) {
+                        container.parentNode.removeChild(container);
+                    }
                 }, 2000);
             });
             listElement.appendChild(li);
         });
     }
-
 
         function filterSubmissions(submissions, filter) {
             return submissions.filter(submission => {
@@ -422,7 +430,8 @@ function initJotFormAutofill() {
                 console.warn(`Date input field with id ${id} not found`);
             }
         }
-
+// Call the function to initialize
+initJotFormAutofill();
         // Start the application
         getAndDisplaySubmissions();
     };
