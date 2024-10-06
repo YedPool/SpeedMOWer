@@ -288,33 +288,6 @@ function initJotFormAutofill() {
             // Can operate appliances
             selectRadioByName('q54_doesAny', safeGet(submission, 'answers.54.answer'));
 
-            // Household maintenance needs
-            fillIfExists('q57_doYou57', safeGet(submission, 'answers.57.answer'));
-
-            // Referrals given
-            const referrals = safeGet(submission, 'answers.58.prettyFormat');
-            if (referrals) {
-                fillCheckboxesByName('q58_referralsGiven', referrals.split('; '));
-            }
-
-            // Eligibility
-            const eligibility = safeGet(submission, 'answers.59.prettyFormat');
-            if (eligibility) {
-                fillCheckboxesByName('q59_eligibility', eligibility.split('; '));
-            }
-
-            // Meals eligibility
-            const mealsEligibility = safeGet(submission, 'answers.60.prettyFormat');
-            if (mealsEligibility) {
-                fillCheckboxesByName('q60_mealsEligibility', mealsEligibility.split('; '));
-            }
-
-            // Relevant descriptors
-            const descriptors = safeGet(submission, 'answers.61.prettyFormat');
-            if (descriptors) {
-                fillCheckboxesByName('q61_selectRelevant', descriptors.split('; '));
-            }
-
             // Nutrition screening
             console.log('Attempting to fill Date of Birth (q68)');
             const dobValue2 = safeGet(submission, 'answers.68.prettyFormat');
