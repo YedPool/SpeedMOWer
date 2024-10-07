@@ -179,7 +179,16 @@ function initJotFormAutofill() {
             const fillIfExists = (name, value) => {
                 if (value) fillInputByName(name, value);
             };
-
+            
+            // New Assessment or Reassessment? (Question 164)
+            const reassessmentCheckbox = document.querySelector('input[type="checkbox"][name="q164_newAssessment[]"][value="Reassessment"]');
+            if (reassessmentCheckbox) {
+                reassessmentCheckbox.checked = true;
+                reassessmentCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                console.warn('Reassessment checkbox not found');
+            }
+            
             // Name
             fillIfExists('q3_name[first]', safeGet(submission, 'answers.3.answer.first'));
             fillIfExists('q3_name[last]', safeGet(submission, 'answers.3.answer.last'));
@@ -232,11 +241,15 @@ function initJotFormAutofill() {
             // Other meals provider
             selectRadioByName('q29_areYou', safeGet(submission, 'answers.29.answer'));
 
-            // Health conditions
-            const healthConditions = safeGet(submission, 'answers.31.prettyFormat');
-            if (healthConditions) {
-                fillCheckboxesByName('q31_checkHealth', healthConditions.split('; '));
-            }
+    // Health conditions (Question 31)
+    console.log('Health conditions data:', JSON.stringify(submission.answers[31], null, 2));
+    const healthConditions = safeGet(submission, 'answers.31.answer');
+    if (healthConditions && typeof healthConditions === 'object') {
+        const selectedConditions = Object.keys(healthConditions)
+            .filter(key => healthConditions[key] === true)
+            .map(key => key.replace(/_/g, ' ')); // Replace underscores with spaces
+        fillCheckboxesByName('q31_checkHealth', selectedConditions);
+    }
 
             // Mental Illness
             fillIfExists('q34_mentalIllness', safeGet(submission, 'answers.34.answer'));
@@ -373,6 +386,29 @@ function initJotFormAutofill() {
             // Nutritionist consultation
             selectRadioByName('q119_wouldYou119', safeGet(submission, 'answers.119.answer'));
 
+                // Title and Date (Question 120)
+            const titleAndDate = safeGet(submission, 'answers.120.answer');
+    
+            // Fill in the title
+              const titleInput = document.querySelector('input[name="q120_input120[shorttext-1]"]');
+            if (titleInput) {
+                if (titleAndDate && titleAndDate['shorttext-1']) {
+                    titleInput.value = titleAndDate['shorttext-1'];
+                } else {
+                    titleInput.value = 'SWI'; // Default value if not present in submission
+                }
+                titleInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                // Fill in today's date
+                const dateInput = document.querySelector('input[name="q120_input120[shorttext-2]"]');
+                if (dateInput) {
+                const today = new Date();
+                const formattedDate = `${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()}`;
+                dateInput.value = formattedDate;
+                dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+            
             // ADL and IADL scores
             fillIfExists('q159_adlScore159', safeGet(submission, 'answers.159.answer'));
             fillIfExists('q158_numberOf', safeGet(submission, 'answers.158.answer'));
@@ -387,6 +423,36 @@ function initJotFormAutofill() {
                 fillCheckboxesByName('q166_doYou166', [weekendSupport]);
             }
 
+    // How happy were you with my service today? (Question 187)
+    const ratingContainer = document.getElementById('input_187');
+    if (ratingContainer) {
+        // Find all the rating stars
+        const stars = ratingContainer.querySelectorAll('.rating-item');
+        if (stars.length > 0) {
+            // Click the last star (highest rating)
+            const lastStar = stars[stars.length - 1];
+            lastStar.click();
+            
+            // If you want to simulate a mouse event instead of a click:
+            // const event = new MouseEvent('mousedown', {
+            //     view: window,
+            //     bubbles: true,
+            //     cancelable: true
+            // });
+            // lastStar.dispatchEvent(event);
+        } else {
+            console.warn('Rating stars not found');
+        }
+    } else {
+        console.warn('Rating container not found');
+    }
+            
+    // Who Signed? (Question 195)
+    const whoSigned = safeGet(submission, 'answers.195.answer');
+    if (whoSigned) {
+        selectRadioByName('q195_whoSigned', whoSigned);
+    }
+            
             // Assessment narrative
             fillIfExists('q122_assessmentNarrative', safeGet(submission, 'answers.122.answer'));
 
@@ -422,29 +488,66 @@ function initJotFormAutofill() {
             }
         }
 
-        function fillCheckboxesByName(name, values) {
-            values.forEach(value => {
-                const checkbox = document.querySelector(`[name="${name}"][value="${value}"]`);
-                if (checkbox) checkbox.checked = true;
-            });
+function fillCheckboxesByName(name, values) {
+    if (!Array.isArray(values)) {
+        console.warn(`Expected array for checkbox values, got: ${typeof values}`);
+        return;
+    }
+    values.forEach(value => {
+        // Use attribute selector to find checkbox, accounting for spaces in the value
+        const checkbox = document.querySelector(`input[type="checkbox"][name="${name}[]"][value="${value.replace(/"/g, '\\"')}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        } else {
+            console.warn(`Checkbox with name ${name} and value "${value}" not found`);
         }
+    });
+}
 
         function fillDateById(id, dateString) {
-            console.log(`Attempting to fill date for element with id ${id} with value: ${dateString}`);
-            if (!dateString) {
-                console.log(`No date string provided for ${id}`);
-                return;
-            }
-            const input = document.getElementById(id);
-            if (input) {
-                input.value = dateString;
-                console.log(`Successfully filled date input ${id} with ${dateString}`);
-                // Dispatch an input event to trigger any listeners
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            } else {
-                console.warn(`Date input field with id ${id} not found`);
-            }
+    console.log(`Attempting to fill date for element with id ${id} with value: ${dateString}`);
+    if (!dateString) {
+        console.log(`No date string provided for ${id}`);
+        return;
+    }
+
+    const input = document.getElementById(id);
+    if (input) {
+        // Set the value
+        input.value = dateString;
+
+        // Create and dispatch events
+        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+        const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+        const blurEvent = new Event('blur', { bubbles: true, cancelable: true });
+
+        input.dispatchEvent(inputEvent);
+        input.dispatchEvent(changeEvent);
+        input.dispatchEvent(blurEvent);
+
+        console.log(`Successfully filled date input ${id} with ${dateString}`);
+
+        // If there's a calendar icon or trigger associated with this input, try to click it
+        const calendarTrigger = input.nextElementSibling;
+        if (calendarTrigger && calendarTrigger.classList.contains('calendar-trigger')) {
+            calendarTrigger.click();
+            setTimeout(() => {
+                document.body.click(); // Close the calendar if it opened
+            }, 100);
         }
+
+        // If JotForm uses a hidden input for the actual value, try to update that as well
+        const hiddenInput = document.querySelector(`input[name="${input.name}"][type="hidden"]`);
+        if (hiddenInput) {
+            hiddenInput.value = dateString;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    } else {
+        console.warn(`Date input field with id ${id} not found`);
+    }
+}
+
 
         // Start the application
         getAndDisplaySubmissions();
