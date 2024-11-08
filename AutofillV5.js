@@ -337,7 +337,7 @@ function initJotFormAutofill() {
             fillIfExists('q70_whatIs70', safeGet(submission, 'answers.70.answer'));
             selectRadioByName('q72_4Referral', safeGet(submission, 'answers.72.answer'));
             selectRadioByName('q74_5Are', safeGet(submission, 'answers.74.answer'));
-            selectRadioByName('q75_6Kind', safeGet(submission, 'answers.75.answer'));
+
 
             
             // Eating habits
@@ -453,8 +453,6 @@ function initJotFormAutofill() {
         selectRadioByName('q195_whoSigned', whoSigned);
     }
             
-            // Assessment narrative
-            fillIfExists('q122_assessmentNarrative', safeGet(submission, 'answers.122.answer'));
 
             // Trigger change events
             document.querySelectorAll('input, select, textarea').forEach(input => {
